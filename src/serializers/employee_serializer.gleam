@@ -1,6 +1,9 @@
 import gleam/dynamic.{field}
 import gleam/json.{object, string}
-import models/employee.{type Employee, Employee}
+import models/employee.{
+  type Employee, type EmployeeIntermintermediate, Employee,
+  EmployeeIntermintermediate,
+}
 
 pub fn decode_employee(
   json_string: String,
@@ -23,4 +26,17 @@ pub fn encode_employee(employee: Employee) -> String {
     #("birth", string(employee.birth)),
   ])
   |> json.to_string
+}
+
+pub fn decode_new_employee(
+  json_string: String,
+) -> Result(EmployeeIntermintermediate, json.DecodeError) {
+  let employee_decoder =
+    dynamic.decode2(
+      EmployeeIntermintermediate,
+      field("name", of: dynamic.string),
+      field("birth", of: dynamic.string),
+    )
+
+  json.decode(from: json_string, using: employee_decoder)
 }

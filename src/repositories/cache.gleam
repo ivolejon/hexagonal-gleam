@@ -3,9 +3,7 @@ import gleam/erlang/process.{type Subject}
 import gleam/otp/actor
 import models/employee.{type Employee}
 
-// import gleam/io
-
-const timeout = 3000
+const timeout = 100
 
 type Store =
   Dict(String, Employee)

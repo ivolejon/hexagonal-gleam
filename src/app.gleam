@@ -1,12 +1,13 @@
 import gleam/erlang/os
 import gleam/erlang/process
-import gleam/http/elli
 import gleam/int
 import gleam/io
 import gleam/result
 import gleam/string
-import repositories/cache.{type Cache}
+import mist
+import repositories/cache
 import services/router
+import wisp
 
 pub fn main() {
   let fallback_port: Int = 3000
@@ -15,11 +16,19 @@ pub fn main() {
     |> result.then(int.parse)
     |> result.unwrap(fallback_port)
 
+  wisp.configure_logger()
+  let secret_key_base = wisp.random_string(64)
   let assert Ok(ctx) = cache.new()
 
-  let _ = elli.start(router.service(ctx), on_port: port)
+  let assert Ok(_) =
+    wisp.mist_handler(router.handle_request(ctx), secret_key_base)
+    |> mist.new
+    |> mist.port(port)
+    |> mist.start_http
+
   ["Started listening on localhost:", int.to_string(port), " ✨"]
   |> string.concat
   |> io.println
+
   process.sleep_forever()
 }
