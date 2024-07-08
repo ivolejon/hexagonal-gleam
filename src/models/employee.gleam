@@ -1,4 +1,5 @@
-import gluid
+import gleam/dynamic.{field}
+import gleam/json.{object, string}
 
 pub type Employee {
   Employee(id: String, name: String, birth: String)
@@ -8,11 +9,22 @@ pub type EmployeeIntermintermediate {
   EmployeeIntermintermediate(name: String, birth: String)
 }
 
-pub fn new(name: String, birth: String) -> Result(Employee, Nil) {
-  let uuid: String = gluid.guidv4()
-  Ok(Employee(id: uuid, name: name, birth: birth))
+pub fn to_json(employee: Employee) -> String {
+  object([
+    #("id", string(employee.id)),
+    #("name", string(employee.name)),
+    #("birth", string(employee.birth)),
+  ])
+  |> json.to_string
 }
 
-pub fn update_name(employee: Employee, new_name: String) -> Employee {
-  Employee(..employee, name: new_name)
+pub fn from_json(json_string: String) -> Result(Employee, json.DecodeError) {
+  let employee_decoder =
+    dynamic.decode3(
+      Employee,
+      field("id", of: dynamic.string),
+      field("name", of: dynamic.string),
+      field("birth", of: dynamic.string),
+    )
+  json.decode(from: json_string, using: employee_decoder)
 }

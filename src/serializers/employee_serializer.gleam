@@ -1,31 +1,25 @@
-import gleam/dynamic.{field}
+import gleam/dynamic.{field, list}
 import gleam/json.{object, string}
+import gleam/list
+import gleam/string
 import models/employee.{
   type Employee, type EmployeeIntermintermediate, Employee,
   EmployeeIntermintermediate,
 }
 
-pub fn decode_employee(
-  json_string: String,
-) -> Result(Employee, json.DecodeError) {
-  let employee_decoder =
-    dynamic.decode3(
-      Employee,
-      field("id", of: dynamic.string),
-      field("name", of: dynamic.string),
-      field("birth", of: dynamic.string),
-    )
+pub fn encode_employee_collection(employees: List(Employee)) -> String {
+  let json_list =
+    list.map(employees, fn(e: Employee) {
+      object([
+        #("id", string(e.id)),
+        #("name", string(e.name)),
+        #("birth", string(e.birth)),
+      ])
+      |> json.to_string
+    })
+    |> string.join(", ")
 
-  json.decode(from: json_string, using: employee_decoder)
-}
-
-pub fn encode_employee(employee: Employee) -> String {
-  object([
-    #("id", string(employee.id)),
-    #("name", string(employee.name)),
-    #("birth", string(employee.birth)),
-  ])
-  |> json.to_string
+  string.join(["[", json_list, "]"], "")
 }
 
 pub fn decode_new_employee(
